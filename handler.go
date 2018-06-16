@@ -28,6 +28,12 @@ type qrCodeResponse struct {
 }
 
 func (h httpHandler) qrCode(w http.ResponseWriter, r *http.Request) {
+	origin := r.Header.Get("Origin")
+
+	w.Header().Set("Access-Control-Allow-Origin", origin)
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Cache-Control")
+
 	token := r.URL.Query().Get("token")
 	if token == "" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -50,6 +56,16 @@ func (h httpHandler) qrCode(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h httpHandler) isAuthenticated(w http.ResponseWriter, r *http.Request) {
+	origin := r.Header.Get("Origin")
+
+	w.Header().Set("Access-Control-Allow-Origin", origin)
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Cache-Control")
+
+	if r.Method == http.MethodOptions {
+		return
+	}
+
 	token := r.URL.Query().Get("token")
 	if token == "" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -67,7 +83,7 @@ func (h httpHandler) isAuthenticated(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Pragma", "no-cache")
 	w.Header().Set("Expires", "0")
 	// send something back instantly
-	_, err := w.Write([]byte("{\"login\":\"waiting\"}\n"))
+	_, err := w.Write([]byte("data: {\"login\":\"waiting\"}\n\n"))
 	if err != nil {
 		log.Println(err)
 		return
@@ -78,9 +94,9 @@ func (h httpHandler) isAuthenticated(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-ch:
-		w.Write([]byte("{\"login\":\"success\"}"))
+		w.Write([]byte("data: {\"login\":\"success\"}\n\n"))
 	case <-time.After(10 * time.Second):
-		w.Write([]byte("{\"login\":\"timeout\"}"))
+		w.Write([]byte("data: {\"login\":\"timeout\"}\n\n"))
 	}
 	h.auth.remove(token)
 }
