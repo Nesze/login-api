@@ -44,7 +44,7 @@ func initializeHTTPServer(addr string, h httpHandler) (chan error, func()) {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api/1.0/qrCode", h.qrCode).Queries("token", "").Methods(http.MethodGet)
-	router.HandleFunc("/api/1.0/isAuthenticated", h.isAuthenticated).Queries("token", "").Methods(http.MethodGet)
+	router.HandleFunc("/api/1.0/isAuthenticated", h.isAuthenticated).Queries("token", "").Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/api/1.0/authenticate", h.authenticate).Methods(http.MethodPost)
 
 	server := &http.Server{Addr: addr, Handler: router}
